@@ -23,7 +23,7 @@ if __name__ == '__main__':
 
     # Training parameters
     param_scale = 0.1
-    learning_rate = 0.01 / img_all_num
+    learning_rate = 0.1 / img_all_num
     momentum = 0.9
     batch_size = 512
     num_epochs = 5000
