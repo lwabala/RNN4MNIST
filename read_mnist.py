@@ -26,8 +26,8 @@ img_subsize = struct.calcsize('>784B')
 
 def lab2target(lab):
     '''Transform a numeral label to one-hot code.'''
-    tar = np.zeros([1,10], dtype=np.float32)
-    tar[0,lab] = 1.
+    tar = np.zeros([1,1,10], dtype=np.float32)
+    tar[0,0,lab] = 1.
     return tar
 
 def img_subset(img):
@@ -64,7 +64,7 @@ def read_one_mnist(index, ifshow=False, file='train'):
     index_IMG = img_titlesize + img_subsize * index
     lab = struct.unpack_from('>1B', LABstream, index_LAB)[0]
     img = struct.unpack_from('>784B', IMGstream, index_IMG)
-    # norm img data to [0~1]
+    # norm img data to [0~1] & reshape
     img = np.asarray(img,dtype=np.float32).reshape(28,28)/255
     
     if ifshow:
@@ -75,21 +75,22 @@ def read_one_mnist(index, ifshow=False, file='train'):
     return lab , img
 
 
-def read_all_mnist(file='train'):
+def read_all_mnist(img_num, file='train',mod='local'):
     '''Using in train_rnn, file='train' for train data or 'test' for test data.'''
-    if file == 'train':
-        # the number that how many images will be taken from MNIST database
-        img_num = 1024*20
-    elif file == 'test':
-        img_num = 1000*10
-
     labs, imgs = [], []
-    
-    for imgiter in xrange(img_num):
-        lab, img = read_one_mnist(imgiter, ifshow=0, file=file)
-        labs.append(lab2target(lab))
-        imgs.append(img_subset(img))
+    if mod == 'local':
+        for imgiter in xrange(img_num):
+            lab, img = read_one_mnist(imgiter, ifshow=0, file=file)
+            labs.append(lab2target(lab))
+            imgs.append(img_subset(img))
+        lab_set = np.concatenate(labs, axis=0)
+        img_set = np.concatenate(imgs, axis=1)
+    elif mod == 'full':
+        for imgiter in xrange(img_num):
+            lab, img = read_one_mnist(imgiter, ifshow=0, file=file)
+            labs.append(lab2target(lab))
+            imgs.append([img])
+        lab_set = np.concatenate(labs, axis=0)
+        img_set = np.concatenate(imgs, axis=0)
 
-    lab_set = np.concatenate(labs, axis=0)
-    img_set = np.concatenate(imgs, axis=1)
     return lab_set, img_set, img_num
