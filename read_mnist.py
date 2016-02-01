@@ -1,5 +1,4 @@
 import numpy as np
-from numpy import array as npa
 import struct
 import matplotlib.pyplot as plt
 
@@ -35,16 +34,15 @@ def img_subset(img):
     local_img = img
     img_set = []
     # 3*3 patches in total , each patch is 14pix*14pix
-    # rows,cols = local_img.shape
-    subnum = npa([3,3])
-    subsize = npa([14,14])
+    subnum = np.array([3,3])
+    subsize = np.array([14,14])
     subdist = (local_img.shape - subsize) / (subnum - 1)
     for srow in range(subnum[0]):
         for scol in range(subnum[1]):
             row, col = subdist * (srow, scol)
             sub_img = local_img[row : row + subsize[0], col : col + subsize[1]]
             img_set.append(sub_img.reshape(1,-1))
-    return npa(img_set)
+    return np.array(img_set)
 
 def read_one_mnist(index, ifshow=False, file='train'):
     '''Read an image and its label from MNIST with its order
@@ -53,20 +51,14 @@ def read_one_mnist(index, ifshow=False, file='train'):
         ifshow = True or False , if show the image
         file = 'train' , for train data 
             or 'test'  , for test data.'''
-    if file == 'train' :
-        LABstream = stream_tr_lab
-        IMGstream = stream_tr_img
-    elif file == 'test' :
-        LABstream = stream_te_lab
-        IMGstream = stream_te_img
-    
+    if file == 'train': LABstream, IMGstream = stream_tr_lab, stream_tr_img
+    elif file == 'test': LABstream, IMGstream = stream_te_lab, stream_te_img
     index_LAB = lab_titlesize + lab_subsize * index
     index_IMG = img_titlesize + img_subsize * index
     lab = struct.unpack_from('>1B', LABstream, index_LAB)[0]
     img = struct.unpack_from('>784B', IMGstream, index_IMG)
     # norm img data to [0~1] & reshape
     img = np.asarray(img,dtype=np.float32).reshape(28,28)/255
-    
     if ifshow:
         fig = plt.figure()
         plotwindow = fig.add_subplot(111)
@@ -92,5 +84,4 @@ def read_all_mnist(img_num, file='train',mod='local'):
             imgs.append([img])
         lab_set = np.concatenate(labs, axis=0)
         img_set = np.concatenate(imgs, axis=0)
-
     return lab_set, img_set, img_num
